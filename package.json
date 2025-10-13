@@ -1,7 +1,7 @@
 {
-  "name": "energy-waves-mern",
+  "name": "The-Wave",
   "version": "1.0.0",
-  "description": "Energy Waves One-Page Website with MERN Stack",
+  "description": "Energy Waves for the Future",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,9 +9,9 @@
     "server": "nodemon server.js",
     "client": "cd client && npm start",
     "build-client": "cd client && npm run build",
-    "build": "npm run build:client",
+    "build": "npm run build-client",
     "install-client": "cd client && npm install",
-    "heroku-postbuild": "npm run install-client && npm run build:client",
+    "heroku-postbuild": "npm run install-client && npm run build-client",
     "seed:admin": "node scripts/createAdmin.js",
     "seed:users": "node scripts/seedUsers.js"
   },
