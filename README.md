@@ -1,27 +1,47 @@
 # Energy Waves - MERN Stack Application
 
-A full-stack web application built with the MERN stack (MongoDB, Express.js, React, Node.js) featuring energy wave animations, user management, calendar events, blog system, and admin dashboard.
+A full-stack web application built with the MERN stack (MongoDB, Express.js, React 19, Node.js) featuring energy wave animations, user management, appointment booking system, blog platform, and admin dashboard.
 
 ## 🌊 Features
 
 ### Core Features
 - **Animated Energy Waves Background**: Beautiful SVG wave animations that respond to scroll
-- **User Authentication**: Complete registration, login, and JWT-based authentication
-- **Role-Based Access Control**: User and Admin roles
-- **Responsive Design**: Mobile-first design with dark/light theme support
+- **User Authentication**: Complete registration, login, and JWT-based authentication with refresh tokens
+- **Role-Based Access Control**: User and Admin roles with protected routes
+- **Responsive Design**: Mobile-first design with light/dark theme support
 - **Real-time Animations**: Scroll-triggered wave animations
+- **Image Upload**: Blog featured image upload with multer
 
 ### User Features
-- **Personal Dashboard**: User-specific dashboard with analytics
-- **Calendar Management**: Create and manage events
-- **Blog System**: Create, edit, and publish blog posts
+- **Appointment Booking System**: Public appointment booking with time slot management
+- **Personal Dashboard**: Calendar view with appointment management, closure scheduling
+- **Blog Creation Platform**: Rich text editor (React Quill) for creating and publishing blog posts
+- **Blog Reading**: Public blog list and detailed blog post views
 - **Profile Management**: Update personal information and preferences
+- **Theme Toggle**: Switch between light and dark themes
 
 ### Admin Features
-- **User Management**: View, edit, and manage user accounts
-- **Content Moderation**: Manage blog posts and events
+- **User Management**: View, edit, activate/deactivate, and manage user accounts
+- **Blog Moderation**: Manage all blog posts with status controls
+- **Event Management**: Manage calendar events
 - **Analytics Dashboard**: Platform statistics and insights
-- **System Administration**: Role management and platform settings
+- **Role Management**: Update user roles
+
+### Appointment System
+- **Public Booking**: Users can book appointments with professionals
+- **Time Slot Management**: Visual calendar with available/booked/closed slots
+- **Closure Management**: Mark specific hours or full days as unavailable
+- **Status Management**: Pending/Confirmed/Cancelled appointment workflow
+- **Email Notifications**: Automated appointment confirmation emails
+
+### Blog System
+- **Rich Text Editor**: React Quill with mobile-friendly toolbar
+- **Draft/Published Status**: Save drafts and publish when ready
+- **Featured Images**: Upload and display blog images
+- **Slug-based URLs**: SEO-friendly blog post URLs
+- **Auto Reading Time**: Automatically calculated from content
+- **View Tracking**: Track blog post views
+- **Author Information**: Display author details with each post
 
 ## 🚀 Quick Start
 
@@ -35,7 +55,7 @@ A full-stack web application built with the MERN stack (MongoDB, Express.js, Rea
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd energy-waves-mern
+   cd energy-waves
    ```
 
 2. **Install backend dependencies**
@@ -46,7 +66,7 @@ A full-stack web application built with the MERN stack (MongoDB, Express.js, Rea
 3. **Install frontend dependencies**
    ```bash
    cd client
-   npm install
+   npm install --legacy-peer-deps
    cd ..
    ```
 
@@ -58,18 +78,31 @@ A full-stack web application built with the MERN stack (MongoDB, Express.js, Rea
    PORT=5000
    MONGODB_URI=mongodb://localhost:27017/energy-waves
    JWT_SECRET=your-super-secret-jwt-key-here-make-it-very-long-and-random
+   JWT_EXPIRES_IN=7d
    CLIENT_URL=http://localhost:3000
-   ADMIN_EMAIL=admin@energywaves.com
-   ADMIN_PASSWORD=admin123
+   
+   # Email Configuration (Optional - for appointment notifications)
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
+   EMAIL_SECURE=false
+   EMAIL_USER=your-email@gmail.com
+   EMAIL_PASSWORD=your-app-password
+   EMAIL_FROM=Energy Waves <noreply@energywaves.com>
+   APP_URL=http://localhost:3000
+   API_URL=http://localhost:5000
    ```
 
    Create `client/.env` file:
    ```env
    REACT_APP_API_URL=http://localhost:5000/api
-   REACT_APP_NAME=Energy Waves
    ```
 
-5. **Start the application**
+5. **Create Admin User**
+   ```bash
+   npm run seed:admin
+   ```
+
+6. **Start the application**
    ```bash
    # Start both backend and frontend concurrently
    npm run dev
@@ -82,49 +115,65 @@ A full-stack web application built with the MERN stack (MongoDB, Express.js, Rea
    npm run client
    ```
 
-6. **Access the application**
+7. **Access the application**
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:5000/api
+   - Admin Login: Use credentials from createAdmin.js script
 
 ## 📁 Project Structure
 
 ```
-energy-waves-mern/
-├── client/                 # React frontend
+energy-waves/
+├── client/                    # React 19 frontend
 │   ├── public/
+│   │   └── images/
+│   │       └── blog/         # Uploaded blog images
 │   ├── src/
-│   │   ├── components/     # Reusable components
+│   │   ├── components/       # Reusable components
 │   │   │   ├── EnergyWaves/
 │   │   │   ├── Navbar/
-│   │   │   └── ProtectedRoute/
-│   │   ├── contexts/       # React contexts
+│   │   │   ├── ProtectedRoute/
+│   │   │   └── Modals/       # Appointment, Closure, TimeSlot modals
+│   │   ├── contexts/         # React contexts
 │   │   │   ├── AuthContext.tsx
 │   │   │   └── ThemeContext.tsx
-│   │   ├── pages/          # Page components
+│   │   ├── pages/            # Page components
 │   │   │   ├── Home/
 │   │   │   ├── About/
-│   │   │   ├── Calendar/
-│   │   │   ├── Blog/
+│   │   │   ├── Calendar/     # Public appointment booking
+│   │   │   ├── Blog/         # Public blog reading
+│   │   │   ├── MyBlogs/      # Blog creation & management
 │   │   │   ├── Contact/
 │   │   │   ├── Auth/
-│   │   │   ├── Dashboard/
-│   │   │   └── Admin/
-│   │   ├── services/       # API services
+│   │   │   ├── Dashboard/    # User appointment dashboard
+│   │   │   └── Admin/        # Admin panel
+│   │   ├── services/         # API services
+│   │   │   └── api.ts
 │   │   └── App.tsx
 │   └── package.json
-├── models/                 # MongoDB models
+├── models/                    # MongoDB models
 │   ├── User.js
 │   ├── Blog.js
-│   └── Calendar.js
-├── routes/                 # Express routes
+│   ├── Calendar.js
+│   ├── Appointment.js
+│   └── Closure.js
+├── routes/                    # Express routes
 │   ├── auth.js
 │   ├── users.js
 │   ├── blog.js
 │   ├── calendar.js
+│   ├── appointments.js
+│   ├── closures.js
+│   ├── appointmentActions.js
 │   └── admin.js
-├── middleware/             # Custom middleware
+├── middleware/                # Custom middleware
 │   └── auth.js
-├── server.js              # Express server
+├── scripts/                   # Utility scripts
+│   ├── createAdmin.js
+│   └── seedUsers.js
+├── services/                  # Backend services
+│   └── emailService.js
+├── server.js                  # Express server
 ├── package.json
 └── README.md
 ```
@@ -139,6 +188,7 @@ energy-waves-mern/
 - `POST /api/auth/logout` - User logout
 
 ### Users
+- `GET /api/users/public` - Get public user list
 - `GET /api/users` - Get all users (admin)
 - `GET /api/users/:id` - Get user by ID
 - `PUT /api/users/:id` - Update user
@@ -146,15 +196,37 @@ energy-waves-mern/
 - `PUT /api/users/:id/activate` - Activate/deactivate user (admin)
 
 ### Blog
-- `GET /api/blog` - Get published blog posts
+- `GET /api/blog` - Get published blog posts (with pagination, search, category filter)
 - `GET /api/blog/:slug` - Get blog post by slug
 - `GET /api/blog/draft` - Get user's draft posts
 - `POST /api/blog` - Create blog post
+- `POST /api/blog/upload-image` - Upload blog featured image
 - `PUT /api/blog/:id` - Update blog post
 - `DELETE /api/blog/:id` - Delete blog post
 - `POST /api/blog/:id/like` - Toggle like on blog post
 
-### Calendar
+### Appointments
+- `GET /api/appointments/public/:userId` - Get public appointments for a user
+- `POST /api/appointments/public/:userId` - Create public appointment
+- `GET /api/appointments` - Get user's appointments (owner only)
+- `GET /api/appointments/:id` - Get appointment by ID
+- `POST /api/appointments` - Create appointment (owner)
+- `PUT /api/appointments/:id` - Update appointment
+- `DELETE /api/appointments/:id` - Delete appointment
+
+### Closures
+- `GET /api/closures/public/:userId` - Get public closures
+- `GET /api/closures` - Get user's closures (owner only)
+- `POST /api/closures` - Create closure
+- `PUT /api/closures/:id` - Update closure
+- `DELETE /api/closures/:id` - Delete closure
+
+### Appointment Actions
+- `POST /api/appointment-actions/:id/approve` - Approve appointment
+- `POST /api/appointment-actions/:id/reject` - Reject appointment
+- `POST /api/appointment-actions/:id/cancel` - Cancel appointment
+
+### Calendar/Events
 - `GET /api/calendar` - Get public events
 - `GET /api/calendar/:id` - Get event by ID
 - `GET /api/calendar/my-events` - Get user's events
@@ -169,26 +241,32 @@ energy-waves-mern/
 - `GET /api/admin/users` - Get users with admin controls
 - `GET /api/admin/blogs` - Get blogs with admin controls
 - `GET /api/admin/events` - Get events with admin controls
-- `PUT /api/admin/users/:id/role` - Update user role (admin)
+- `PUT /api/admin/users/:id/role` - Update user role
 - `PUT /api/admin/blogs/:id/status` - Update blog status
 - `PUT /api/admin/events/:id/status` - Update event status
+- `DELETE /api/admin/users/:id` - Delete user
 
-## 🎨 Customization
+## 🎨 Tech Stack
 
-### Energy Waves Animation
-The energy waves animation is controlled by CSS and can be customized in:
-- `client/src/components/EnergyWaves/EnergyWaves.css`
-- Wave patterns in `client/src/components/EnergyWaves/EnergyWaves.tsx`
+### Frontend
+- **React 19** - Latest React with improved performance
+- **TypeScript** - Type-safe code
+- **React Router 7** - Client-side routing
+- **React Quill (New)** - Rich text editor compatible with React 19
+- **Axios** - HTTP client with interceptors
+- **Context API** - State management (Auth, Theme)
 
-### Theme Customization
-The application supports both dark and light themes. Theme styles are located in:
-- `client/src/App.css`
-- Individual component CSS files with `[data-theme="light"]` selectors
-
-### Styling
-- Main styles: `client/src/App.css`
-- Component-specific styles in respective component folders
-- Responsive design with mobile-first approach
+### Backend
+- **Node.js** - Runtime environment
+- **Express** - Web framework
+- **MongoDB** - Database
+- **Mongoose** - ODM
+- **JWT** - Authentication
+- **Multer** - File upload
+- **Nodemailer** - Email service
+- **Bcrypt** - Password hashing
+- **Helmet** - Security headers
+- **Express Rate Limit** - API rate limiting
 
 ## 🔧 Development
 
@@ -197,23 +275,24 @@ The application supports both dark and light themes. Theme styles are located in
 **Root directory:**
 - `npm start` - Start production server
 - `npm run dev` - Start development mode (concurrent backend + frontend)
-- `npm run server` - Start backend only
+- `npm run server` - Start backend only (with nodemon)
 - `npm run client` - Start frontend only
 - `npm run build` - Build frontend for production
+- `npm run seed:admin` - Create admin user
+- `npm run seed:users` - Seed sample users
 
 **Client directory:**
 - `npm start` - Start React development server
 - `npm run build` - Build for production
 - `npm test` - Run tests
-- `npm run eject` - Eject from Create React App
 
 ### Database Models
 
 #### User Model
 ```javascript
 {
-  username: String,
-  email: String,
+  username: String (unique),
+  email: String (unique),
   password: String (hashed),
   firstName: String,
   lastName: String,
@@ -221,7 +300,11 @@ The application supports both dark and light themes. Theme styles are located in
   avatar: String,
   bio: String,
   isActive: Boolean,
-  preferences: Object,
+  lastLogin: Date,
+  preferences: {
+    notifications: { email, calendar, blog },
+    theme: ['light', 'dark', 'auto']
+  },
   timestamps: true
 }
 ```
@@ -230,86 +313,101 @@ The application supports both dark and light themes. Theme styles are located in
 ```javascript
 {
   title: String,
-  slug: String,
+  slug: String (unique, auto-generated),
   excerpt: String,
-  content: String,
+  content: String (HTML from rich editor),
   author: ObjectId (User),
   category: String,
   tags: [String],
+  featuredImage: String,
   status: ['draft', 'published', 'archived'],
   publishedAt: Date,
+  readingTime: Number (auto-calculated),
   views: Number,
   likes: [ObjectId (User)],
-  comments: [Object],
+  comments: [{user, content, createdAt, isApproved}],
+  seo: {metaTitle, metaDescription, metaKeywords},
   timestamps: true
 }
 ```
 
-#### Calendar Model
+#### Appointment Model
 ```javascript
 {
-  title: String,
-  description: String,
-  startDate: Date,
-  endDate: Date,
-  organizer: ObjectId (User),
-  attendees: [Object],
-  category: String,
-  status: String,
-  isPublic: Boolean,
-  maxAttendees: Number,
+  user: ObjectId (User - the professional),
+  date: Date,
+  startTime: String,
+  endTime: String,
+  clientName: String,
+  clientSurname: String,
+  clientEmail: String,
+  clientPhone: String,
+  notes: String,
+  status: ['pending', 'confirmed', 'cancelled', 'completed'],
   timestamps: true
 }
 ```
 
-## 🚀 Deployment
-
-### Backend Deployment (Heroku)
-1. Create Heroku app
-2. Set environment variables in Heroku dashboard
-3. Connect GitHub repository
-4. Enable automatic deployments
-
-### Frontend Deployment (Netlify/Vercel)
-1. Build the frontend: `npm run build`
-2. Deploy `client/build` folder
-3. Set environment variables for production API URL
-
-### Environment Variables for Production
-```env
-NODE_ENV=production
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/energy-waves
-JWT_SECRET=your-production-secret-key
-CLIENT_URL=https://your-frontend-domain.com
+#### Closure Model
+```javascript
+{
+  user: ObjectId (User),
+  date: Date,
+  isFullDay: Boolean,
+  startTime: String,
+  endTime: String,
+  reason: String,
+  timestamps: true
+}
 ```
 
-## 🤝 Contributing
+## 🚀 Deployment to Render.com
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/new-feature`
-3. Commit changes: `git commit -am 'Add new feature'`
-4. Push to branch: `git push origin feature/new-feature`
-5. Submit a pull request
+### Backend Deployment
+
+1. **Create New Web Service** on Render.com
+   - Connect your GitHub repository
+   - Select the branch (main/master)
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+   - Set environment variables (see below)
+
+2. **Set Environment Variables** in Render Dashboard
+
+### Frontend Deployment
+
+1. **Create New Static Site** on Render.com
+   - Build Command: `cd client && npm install --legacy-peer-deps && npm run build`
+   - Publish Directory: `client/build`
+   - Add environment variable for API URL
+
+### Important Notes for Render
+- Render automatically detects Node.js version from `package.json`
+- Static files (blog images) are served from `client/public/images`
+- CORS is configured to accept requests from CLIENT_URL
+- Rate limiting is enabled on API routes
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
 ## 🆘 Support
 
-For support, email support@energywaves.com or create an issue in the repository.
+For support, create an issue in the repository.
 
 ## 🔮 Future Enhancements
 
-- Real-time notifications
+- ✅ Real-time appointment notifications
+- ✅ File upload system (blog images)
+- ✅ Email integration (appointment confirmations)
 - Advanced analytics dashboard
-- File upload system
-- Email integration
 - Social media integration
 - Mobile app development
 - Advanced search functionality
 - Multi-language support
+- WebSocket for real-time updates
+- Payment integration for appointments
 
 ---
 
-**Energy Waves** - Revolutionizing energy management through technology 🌊
+**Energy Waves** - Modern appointment booking and content management platform 🌊

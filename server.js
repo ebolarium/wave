@@ -64,14 +64,8 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/closures', closureRoutes);
 app.use('/api/appointment-actions', appointmentActionsRoutes);
 
-// Serve static assets in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static('client/build'));
-  
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
-  });
-}
+// API-only backend - frontend is served separately
+// No need to serve static files since we use separate frontend service
 
 // Error handling middleware
 app.use((err, req, res, next) => {
