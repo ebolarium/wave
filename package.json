@@ -8,6 +8,7 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon server.js",
     "client": "cd client && npm start",
+    "build-client": "cd client && npm run build",
     "build:client": "cd client && npm run build",
     "build": "npm run build:client",
     "install-client": "cd client && npm install",
