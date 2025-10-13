@@ -8,10 +8,9 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon server.js",
     "client": "cd client && npm start",
-    "build": "cd client && npm run build",
     "build:client": "cd client && npm install --legacy-peer-deps && npx react-scripts build",
     "install-client": "cd client && npm install",
-    "heroku-postbuild": "npm run install-client && npm run build",
+    "heroku-postbuild": "npm run install-client && npm run build:client",
     "seed:admin": "node scripts/createAdmin.js",
     "seed:users": "node scripts/seedUsers.js"
   },
