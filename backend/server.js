@@ -29,7 +29,17 @@ app.use(cors({
 // Security middleware - configured to work with CORS
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
-  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      connectSrc: ["'self'", "https://wave-i7av.onrender.com"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      fontSrc: ["'self'", "https:", "data:"],
+    },
+  },
 }));
 
 // Rate limiting

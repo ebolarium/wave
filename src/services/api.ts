@@ -1,6 +1,8 @@
 import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig, AxiosError } from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://wave-i7av.onrender.com/api'
+  : 'http://localhost:5000/api';
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
