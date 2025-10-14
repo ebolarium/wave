@@ -43,8 +43,8 @@ app.use('/api/', limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serve static files from client/public (for uploaded images)
-app.use('/images', express.static(path.join(__dirname, 'client/public/images')));
+// Serve static files from public/images (for uploaded images)
+app.use('/images', express.static(path.join(__dirname, '../public/images')));
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/energy-waves', {

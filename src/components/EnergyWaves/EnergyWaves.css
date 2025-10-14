@@ -1,0 +1,136 @@
+/* Global Background Layer */
+.global-waves-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.global-waves-background svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Energy Wave Lines - Enhanced to match original image */
+.wave-line {
+  stroke: #ccc;
+  stroke-width: 0.1;
+  fill: none;
+  opacity: 0.9;
+}
+
+/* More varied opacity levels for realistic depth */
+.wave-line:nth-child(1) { opacity: 0.8; }
+.wave-line:nth-child(2) { opacity: 0.3; }
+.wave-line:nth-child(3) { opacity: 0.6; }
+.wave-line:nth-child(4) { opacity: 0.4; }
+.wave-line:nth-child(5) { opacity: 0.7; }
+.wave-line:nth-child(6) { opacity: 0.2; }
+.wave-line:nth-child(7) { opacity: 0.5; }
+.wave-line:nth-child(8) { opacity: 0.8; }
+.wave-line:nth-child(9) { opacity: 0.3; }
+.wave-line:nth-child(10) { opacity: 0.6; }
+.wave-line:nth-child(11) { opacity: 0.4; }
+.wave-line:nth-child(12) { opacity: 0.7; }
+.wave-line:nth-child(13) { opacity: 0.2; }
+.wave-line:nth-child(14) { opacity: 0.5; }
+
+/* Wave oscillation animations */
+.wave-line {
+  animation: waveOscillate 3s ease-in-out infinite;
+  animation-play-state: paused;
+}
+
+.wave-line:nth-child(2) {
+  animation-delay: -0.2s;
+}
+
+.wave-line:nth-child(3) {
+  animation-delay: -0.4s;
+}
+
+.wave-line:nth-child(4) {
+  animation-delay: -0.6s;
+}
+
+.wave-line:nth-child(5) {
+  animation-delay: -0.8s;
+}
+
+.wave-line:nth-child(6) {
+  animation-delay: -1s;
+}
+
+.wave-line:nth-child(7) {
+  animation-delay: -1.2s;
+}
+
+.wave-line:nth-child(8) {
+  animation-delay: -1.4s;
+}
+
+.wave-line:nth-child(9) {
+  animation-delay: -1.6s;
+}
+
+.wave-line:nth-child(10) {
+  animation-delay: -1.8s;
+}
+
+.wave-line:nth-child(11) {
+  animation-delay: -2s;
+}
+
+.wave-line:nth-child(12) {
+  animation-delay: -2.2s;
+}
+
+.wave-line:nth-child(13) {
+  animation-delay: -2.4s;
+}
+
+.wave-line:nth-child(14) {
+  animation-delay: -2.6s;
+}
+
+/* Animation active when scrolling */
+.scrolling .wave-line {
+  animation-play-state: running;
+}
+
+@keyframes waveOscillate {
+  0%, 100% {
+    transform: scaleY(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scaleY(1.3);
+    opacity: 0.9;
+  }
+}
+
+/* Dark theme adjustments */
+[data-theme="light"] .wave-line {
+  stroke: #999999;
+  opacity: 0.6;
+}
+
+[data-theme="light"] .scrolling .wave-line {
+  opacity: 0.8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .wave-line {
+    stroke-width: 0.15;
+  }
+}
+
+@media (max-width: 480px) {
+  .wave-line {
+    stroke-width: 0.2;
+  }
+}
