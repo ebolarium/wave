@@ -1,8 +1,10 @@
 services:
   - type: web
-    name: wave-backend
+    name: wave-fullstack
     env: node
-    buildCommand: cd backend && npm install
+    buildCommand: |
+      cd backend && npm install
+      cd .. && npm install && npm run build
     startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
@@ -14,7 +16,7 @@ services:
       - key: JWT_REFRESH_SECRET
         sync: false
       - key: CLIENT_URL
-        value: https://your-frontend-url.onrender.com
+        value: https://wave-fullstack.onrender.com
       - key: EMAIL_HOST
         sync: false
       - key: EMAIL_PORT
@@ -23,11 +25,5 @@ services:
         sync: false
       - key: EMAIL_PASS
         sync: false
-
-  - type: static
-    name: wave-frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./build
-    envVars:
       - key: REACT_APP_API_URL
-        value: https://wave-backend.onrender.com/api
+        value: https://wave-fullstack.onrender.com/api

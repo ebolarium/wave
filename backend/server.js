@@ -64,8 +64,16 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/closures', closureRoutes);
 app.use('/api/appointment-actions', appointmentActionsRoutes);
 
-// API-only backend - frontend is served separately
-// No need to serve static files since we use separate frontend service
+// Serve static files from React build
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from React build
+  app.use(express.static(path.join(__dirname, '../build')));
+  
+  // Handle React routing, return all requests to React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../build', 'index.html'));
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
