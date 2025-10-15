@@ -4,6 +4,7 @@ const Appointment = require('../models/Appointment');
 const Closure = require('../models/Closure');
 const User = require('../models/User');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
+const { autoCancelExpiredAppointments } = require('../middleware/autoCancelMiddleware');
 const { 
   sendVisitorRequestConfirmation, 
   sendOwnerNewRequestNotification,
@@ -14,6 +15,9 @@ const {
 } = require('../services/emailService');
 const { generateActionToken } = require('./appointmentActions');
 const router = express.Router();
+
+// Apply auto-cancel middleware to all appointment routes
+router.use(autoCancelExpiredAppointments);
 
 // @route   GET /api/appointments/public/:userId
 // @desc    Get user's appointments for public booking (no client details)
@@ -33,7 +37,8 @@ router.get('/public/:userId', async (req, res) => {
     }
     
     // Only return minimal info for public view (no client details)
-    const appointments = await Appointment.find(query)
+    // Use the new findActiveAppointments method to exclude cancelled appointments
+    const appointments = await Appointment.findActiveAppointments(query)
       .select('date startTime endTime status')
       .sort({ date: 1, startTime: 1 });
     
@@ -69,7 +74,7 @@ router.get('/', authenticateToken, async (req, res) => {
       };
     }
     
-    const appointments = await Appointment.find(query).sort({ date: 1, startTime: 1 });
+    const appointments = await Appointment.findActiveAppointments(query).sort({ date: 1, startTime: 1 });
     
     res.json({
       message: 'Appointments retrieved successfully',
@@ -445,6 +450,46 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.status(500).json({
       message: 'Server error deleting appointment',
       code: 'DELETE_APPOINTMENT_ERROR'
+    });
+  }
+});
+
+// @route   POST /api/appointments/admin/auto-cancel
+// @desc    Manually trigger auto-cancellation of expired pending appointments (Admin only)
+// @access  Private (Admin)
+router.post('/admin/auto-cancel', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        message: 'Access denied. Admin privileges required.',
+        code: 'ACCESS_DENIED'
+      });
+    }
+
+    // Trigger auto-cancellation
+    const result = await Appointment.cancelExpiredPendingAppointments();
+    
+    res.json({
+      message: 'Auto-cancellation completed',
+      data: {
+        cancelled: result.cancelled,
+        appointments: result.appointments.map(apt => ({
+          id: apt._id,
+          clientName: apt.clientName,
+          clientSurname: apt.clientSurname,
+          date: apt.date,
+          startTime: apt.startTime,
+          endTime: apt.endTime
+        }))
+      }
+    });
+
+  } catch (error) {
+    console.error('Manual auto-cancel error:', error);
+    res.status(500).json({
+      message: 'Server error during auto-cancellation',
+      code: 'AUTO_CANCEL_ERROR'
     });
   }
 });

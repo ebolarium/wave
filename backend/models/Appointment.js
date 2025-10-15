@@ -107,5 +107,51 @@ appointmentSchema.statics.checkConflict = async function(userId, date, startTime
   return !!conflict;
 };
 
+// Static method to cancel expired pending appointments
+appointmentSchema.statics.cancelExpiredPendingAppointments = async function() {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  // Find all pending appointments that have passed their date/time
+  const expiredAppointments = await this.find({
+    status: 'pending',
+    $or: [
+      // Appointments from previous days
+      { 
+        date: { $lt: today } 
+      },
+      // Appointments from today that have passed their start time
+      {
+        date: today,
+        startTime: { $lte: now.toTimeString().slice(0, 5) } // Format: HH:MM
+      }
+    ]
+  }).populate('user', 'firstName lastName email');
+
+  if (expiredAppointments.length === 0) {
+    return { cancelled: 0, appointments: [] };
+  }
+
+  // Update all expired appointments to cancelled status
+  const result = await this.updateMany(
+    { _id: { $in: expiredAppointments.map(apt => apt._id) } },
+    { status: 'cancelled' }
+  );
+
+  return {
+    cancelled: result.modifiedCount,
+    appointments: expiredAppointments
+  };
+};
+
+// Static method to get appointments excluding auto-cancelled ones
+appointmentSchema.statics.findActiveAppointments = function(query = {}) {
+  // Exclude cancelled appointments unless specifically requested
+  if (!query.status) {
+    query.status = { $ne: 'cancelled' };
+  }
+  return this.find(query);
+};
+
 module.exports = mongoose.model('Appointment', appointmentSchema);
 

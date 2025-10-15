@@ -15,6 +15,7 @@ const adminRoutes = require('./routes/admin');
 const appointmentRoutes = require('./routes/appointments');
 const closureRoutes = require('./routes/closures');
 const { router: appointmentActionsRoutes } = require('./routes/appointmentActions');
+const schedulerService = require('./services/schedulerService');
 
 const app = express();
 
@@ -104,6 +105,22 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌊 Energy Waves MERN Stack API is ready!`);
+  
+  // Start the scheduler service for auto-cancelling expired appointments
+  schedulerService.start();
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('🛑 SIGTERM received, shutting down gracefully...');
+  schedulerService.stop();
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 SIGINT received, shutting down gracefully...');
+  schedulerService.stop();
+  process.exit(0);
 });
 
 module.exports = app;

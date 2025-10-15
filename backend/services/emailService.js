@@ -403,6 +403,69 @@ const emailTemplates = {
       </body>
       </html>
     `;
+  },
+
+  // Visitor: Auto-cancelled appointment due to expiration
+  visitorAutoCancellationNotification: (appointment, professional) => {
+    const appointmentDate = new Date(appointment.date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          .appointment-details { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffa500; }
+          .detail-row { margin: 10px 0; }
+          .label { font-weight: bold; color: #ffa500; }
+          .button-container { text-align: center; margin: 30px 0; }
+          .btn-book { display: inline-block; padding: 12px 30px; background: #667eea; color: white; border-radius: 8px; text-decoration: none; font-weight: bold; }
+          .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>⏰ Appointment Auto-Cancelled</h1>
+          </div>
+          <div class="content">
+            <p>Dear ${appointment.clientName} ${appointment.clientSurname},</p>
+            
+            <p>Your pending appointment request with <strong>${professional.firstName} ${professional.lastName}</strong> has been automatically cancelled because the scheduled time has passed.</p>
+            
+            <div class="appointment-details">
+              <h3>Cancelled Appointment</h3>
+              <div class="detail-row"><span class="label">Date:</span> ${appointmentDate}</div>
+              <div class="detail-row"><span class="label">Time:</span> ${appointment.startTime} - ${appointment.endTime}</div>
+              <div class="detail-row"><span class="label">Status:</span> <span style="color: #ffa500; font-weight: bold;">⏰ Auto-cancelled (Time Passed)</span></div>
+            </div>
+
+            <p><strong>What happened?</strong></p>
+            <p>Your appointment request was still pending approval when the scheduled time passed. To keep our calendar system accurate, pending appointments are automatically cancelled after their scheduled time.</p>
+
+            <p>Please feel free to book a new appointment at a convenient time:</p>
+
+            <div class="button-container">
+              <a href="${process.env.APP_URL}/calendar" class="btn-book">Book New Appointment</a>
+            </div>
+
+            <div class="footer">
+              <p>Energy Waves Calendar System</p>
+              <p>This is an automated email. Please do not reply directly to this message.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
   }
 };
 
@@ -448,6 +511,19 @@ const sendOwnerCancellationNotification = async (appointment, ownerEmail) => {
   return await sendEmail(ownerEmail, subject, html);
 };
 
+// Send auto-cancellation notification for expired appointments
+const sendAppointmentCancellationNotification = async (appointment, reason = 'expired') => {
+  if (reason === 'expired') {
+    const subject = '⏰ Appointment Auto-Cancelled - Time Passed';
+    const html = emailTemplates.visitorAutoCancellationNotification(appointment, appointment.user);
+    return await sendEmail(appointment.clientEmail, subject, html);
+  }
+  // For other cancellation reasons, use the regular cancellation template
+  const subject = 'Appointment Cancelled';
+  const html = emailTemplates.visitorCancellationConfirmation(appointment, appointment.user);
+  return await sendEmail(appointment.clientEmail, subject, html);
+};
+
 module.exports = {
   sendEmail,
   sendVisitorRequestConfirmation,
@@ -455,6 +531,7 @@ module.exports = {
   sendVisitorApprovalConfirmation,
   sendVisitorDeclineNotification,
   sendVisitorCancellationConfirmation,
-  sendOwnerCancellationNotification
+  sendOwnerCancellationNotification,
+  sendAppointmentCancellationNotification
 };
 
