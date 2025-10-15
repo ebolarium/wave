@@ -21,13 +21,6 @@ const AdminDashboard: React.FC = () => {
     <div className="admin-dashboard">
       <div className="page-content">
         <div className="container">
-          <div className="admin-header">
-            <h1 className="section-title">Admin Dashboard</h1>
-            <p className="section-subtitle">
-              Welcome, {user?.firstName}! Manage your Energy Waves platform.
-            </p>
-          </div>
-
           {/* Admin Navigation */}
           <nav className="admin-nav">
             <Link 

@@ -123,7 +123,8 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ blog, onSave, onCancel }) => {
         <div className="container">
           <div className="editor-header">
             <h1>{blog ? 'Edit Blog Post' : 'Create New Blog Post'}</h1>
-            <button className="btn-secondary" onClick={onCancel} disabled={saving}>
+            <button className="btn-cancel" onClick={onCancel} disabled={saving}>
+              <span className="btn-icon">×</span>
               Cancel
             </button>
           </div>
@@ -208,17 +209,19 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ blog, onSave, onCancel }) => {
 
             <div className="editor-actions">
               <button
-                className="btn-secondary"
+                className="btn-save-draft"
                 onClick={() => handleSave('draft')}
                 disabled={saving}
               >
+                <span className="btn-icon">📄</span>
                 {saving ? 'Saving...' : 'Save as Draft'}
               </button>
               <button
-                className="btn-primary"
+                className="btn-publish"
                 onClick={() => handleSave('published')}
                 disabled={saving}
               >
+                <span className="btn-icon">✓</span>
                 {saving ? 'Publishing...' : 'Publish'}
               </button>
             </div>

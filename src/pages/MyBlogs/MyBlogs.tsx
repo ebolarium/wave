@@ -90,8 +90,9 @@ const MyBlogs: React.FC = () => {
         <div className="container">
           <div className="my-blogs-header">
             <h1>My Blog Posts</h1>
-            <button className="btn-primary" onClick={handleCreateNew}>
-              ✍️ Create New Post
+            <button className="btn-create-post" onClick={handleCreateNew}>
+              <span className="btn-icon">+</span>
+              Create New Post
             </button>
           </div>
 

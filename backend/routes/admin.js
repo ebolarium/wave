@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const Blog = require('../models/Blog');
 const Calendar = require('../models/Calendar');
+const Appointment = require('../models/Appointment');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const router = express.Router();
 
@@ -19,9 +20,12 @@ router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
       draftBlogs,
       totalEvents,
       upcomingEvents,
+      totalAppointments,
+      upcomingAppointments,
       recentUsers,
       recentBlogs,
-      recentEvents
+      recentEvents,
+      recentAppointments
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ isActive: true }),
@@ -33,9 +37,15 @@ router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
         startDate: { $gte: new Date() },
         status: 'scheduled'
       }),
+      Appointment.countDocuments({ status: { $ne: 'cancelled' } }),
+      Appointment.countDocuments({ 
+        date: { $gte: new Date() },
+        status: { $in: ['pending', 'confirmed'] }
+      }),
       User.find().sort({ createdAt: -1 }).limit(5).select('-password'),
       Blog.find().sort({ createdAt: -1 }).limit(5).populate('author', 'username firstName lastName'),
-      Calendar.find().sort({ createdAt: -1 }).limit(5).populate('organizer', 'username firstName lastName')
+      Calendar.find().sort({ createdAt: -1 }).limit(5).populate('organizer', 'username firstName lastName'),
+      Appointment.find().sort({ createdAt: -1 }).limit(5).populate('user', 'firstName lastName username')
     ]);
 
     res.json({
@@ -53,14 +63,15 @@ router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
             draft: draftBlogs
           },
           events: {
-            total: totalEvents,
-            upcoming: upcomingEvents
+            total: totalEvents + totalAppointments,
+            upcoming: upcomingEvents + upcomingAppointments
           }
         },
         recent: {
           users: recentUsers,
           blogs: recentBlogs,
-          events: recentEvents
+          events: recentEvents,
+          appointments: recentAppointments
         }
       }
     });
@@ -442,6 +453,116 @@ router.delete('/users/:id', authenticateToken, requireAdmin, async (req, res) =>
     res.status(500).json({
       message: 'Server error deleting user',
       code: 'DELETE_USER_ERROR'
+    });
+  }
+});
+
+// @route   GET /api/admin/appointments
+// @desc    Get all appointments for admin management
+// @access  Private/Admin
+router.get('/appointments', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+    const status = req.query.status;
+    const startDate = req.query.startDate;
+    const endDate = req.query.endDate;
+
+    let query = {};
+    
+    if (status) {
+      query.status = status;
+    }
+    
+    if (startDate && endDate) {
+      query.date = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+    }
+
+    const appointments = await Appointment.find(query)
+      .populate('user', 'firstName lastName username email')
+      .sort({ date: -1, startTime: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Appointment.countDocuments(query);
+
+    res.json({
+      message: 'Appointments retrieved successfully',
+      data: {
+        appointments,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Get admin appointments error:', error);
+    res.status(500).json({
+      message: 'Server error retrieving appointments',
+      code: 'GET_ADMIN_APPOINTMENTS_ERROR'
+    });
+  }
+});
+
+// @route   GET /api/admin/events
+// @desc    Get all calendar events for admin management
+// @access  Private/Admin
+router.get('/events', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+    const status = req.query.status;
+    const startDate = req.query.startDate;
+    const endDate = req.query.endDate;
+
+    let query = {};
+    
+    if (status) {
+      query.status = status;
+    }
+    
+    if (startDate && endDate) {
+      query.startDate = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+    }
+
+    const events = await Calendar.find(query)
+      .populate('organizer', 'firstName lastName username email')
+      .sort({ startDate: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Calendar.countDocuments(query);
+
+    res.json({
+      message: 'Events retrieved successfully',
+      data: {
+        events,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Get admin events error:', error);
+    res.status(500).json({
+      message: 'Server error retrieving events',
+      code: 'GET_ADMIN_EVENTS_ERROR'
     });
   }
 });

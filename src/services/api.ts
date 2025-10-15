@@ -319,6 +319,15 @@ export const adminAPI = {
   }) =>
     api.get<ApiResponse<{ events: any[]; pagination: any }>>('/admin/events', { params }),
 
+  getAppointments: (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+  }) =>
+    api.get<ApiResponse<{ appointments: any[]; pagination: any }>>('/admin/appointments', { params }),
+
   updateUserRole: (userId: string, role: string) =>
     api.put<ApiResponse<{ user: any }>>(`/admin/users/${userId}/role`, { role }),
 
