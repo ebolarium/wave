@@ -45,6 +45,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   });
 
   const [errors, setErrors] = useState<Partial<AppointmentData>>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -59,6 +60,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
       });
     }
     setErrors({});
+    setIsLoading(false); // Reset loading state when modal opens
   }, [initialData, isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -95,10 +97,17 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
-      onSave(formData);
+      setIsLoading(true);
+      try {
+        await onSave(formData);
+        // Loading will continue until modal closes (handled by parent component)
+      } catch (error) {
+        setIsLoading(false); // Reset loading state on error
+        console.error('Error saving appointment:', error);
+      }
     }
   };
 
@@ -114,9 +123,17 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content appointment-modal" onClick={(e) => e.stopPropagation()}>
+        {isLoading && (
+          <div className="modal-loading-overlay">
+            <div className="spinner">
+              <div className="spinner-inner"></div>
+            </div>
+            <p className="loading-text">Booking your appointment...</p>
+          </div>
+        )}
         <div className="modal-header">
           <h2>{isEditing ? 'Edit Appointment' : 'Book Appointment'}</h2>
-          <button className="modal-close" onClick={onClose}>
+          <button className="modal-close" onClick={onClose} disabled={isLoading}>
             ×
           </button>
         </div>
@@ -141,6 +158,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   onChange={handleChange}
                   className={errors.clientName ? 'error' : ''}
                   placeholder="Enter client's name"
+                  disabled={isLoading}
                 />
                 {errors.clientName && <span className="error-message">{errors.clientName}</span>}
               </div>
@@ -157,6 +175,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   onChange={handleChange}
                   className={errors.clientSurname ? 'error' : ''}
                   placeholder="Enter client's surname"
+                  disabled={isLoading}
                 />
                 {errors.clientSurname && <span className="error-message">{errors.clientSurname}</span>}
               </div>
@@ -174,6 +193,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 onChange={handleChange}
                 className={errors.clientEmail ? 'error' : ''}
                 placeholder="client@example.com"
+                disabled={isLoading}
               />
               {errors.clientEmail && <span className="error-message">{errors.clientEmail}</span>}
             </div>
@@ -190,6 +210,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 onChange={handleChange}
                 className={errors.clientPhone ? 'error' : ''}
                 placeholder="+1 (555) 123-4567"
+                disabled={isLoading}
               />
               {errors.clientPhone && <span className="error-message">{errors.clientPhone}</span>}
             </div>
@@ -203,37 +224,38 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 onChange={handleChange}
                 rows={3}
                 placeholder="Any additional notes about this appointment..."
+                disabled={isLoading}
               />
             </div>
 
             <div className="modal-footer">
               {isPending && isEditing ? (
                 <>
-                  <button type="button" className="btn btn-danger" onClick={onReject}>
+                  <button type="button" className="btn btn-danger" onClick={onReject} disabled={isLoading}>
                     ✕ Reject
                   </button>
-                  <button type="button" className="btn btn-success" onClick={onApprove}>
+                  <button type="button" className="btn btn-success" onClick={onApprove} disabled={isLoading}>
                     ✓ Approve
                   </button>
                 </>
               ) : isEditing ? (
                 <>
-                  <button type="button" className="btn btn-danger" onClick={onDelete}>
+                  <button type="button" className="btn btn-danger" onClick={onDelete} disabled={isLoading}>
                     Delete
                   </button>
-                  <button type="button" className="btn btn-secondary" onClick={onClose}>
+                  <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isLoading}>
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary">
+                  <button type="submit" className="btn btn-primary" disabled={isLoading}>
                     Update Appointment
                   </button>
                 </>
               ) : (
                 <>
-                  <button type="button" className="btn btn-secondary" onClick={onClose}>
+                  <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isLoading}>
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary">
+                  <button type="submit" className="btn btn-primary" disabled={isLoading}>
                     Book Appointment
                   </button>
                 </>
